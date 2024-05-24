@@ -1,35 +1,19 @@
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template
+import requests
 
 app = Flask(__name__)
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+@app.route("/")
+def home():
+  articles = get_recent_articles()
+  return render_template("index.html", articles=articles)
 
-@app.route('/summarize_news', methods=['POST'])
-def summarize_news():
-    category = request.form['category']
-    # Generate the summary using an LLM
-    summary = generate_summary(category)
-    return render_template('news.html', summary=summary, category=category)
+def get_recent_articles():
+  url = "https://newsapi.org/v2/top-headlines?country=us&apiKey=YOUR_API_KEY"
+  response = requests.get(url)
+  articles = response.json()["articles"]
+  return articles
 
-@app.route('/news')
-def news():
-    category = request.args.get('category')
-    if category == 'Financial':
-        summary = "Summarized Financial News: [Generated Summary]"
-    elif category == 'Politics':
-        summary = "Summarized Politics News: [Generated Summary]"
-    elif category == 'Sports':
-        summary = "Summarized Sports News: [Generated Summary]"
-    else:
-        return "Invalid category."
-    return render_template('news.html', summary=summary, category=category)
-
-def generate_summary(category):
-    # Placeholder function to generate a summary using an LLM
-    return "[Generated Summary]"
-
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+  app.run()
